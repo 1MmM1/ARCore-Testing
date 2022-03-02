@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.ar.sceneform.plugin'
 }
 
 android {
@@ -35,5 +36,15 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    api project(":sceneformux")
+
+    implementation 'com.google.ar.sceneform:plugin:1.17.1'
+    implementation 'com.google.ar:core:1.29.0'
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
+    implementation 'com.google.ar.sceneform:core:1.17.1'
 }
+
+apply plugin: 'com.google.ar.sceneform.plugin'
+sceneform.asset('sampledata/TocoToucan.obj',
+                'default',
+                'sampledata/TocoToucan.sfa',
+                'src/main/assets/TocoToucan')
