@@ -18,12 +18,14 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Session;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
-import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.SceneView;
 import com.google.ar.sceneform.Sceneform;
 import com.google.ar.sceneform.math.Vector3;
+import com.google.ar.sceneform.rendering.Color;
+import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
+import com.google.ar.sceneform.rendering.ShapeFactory;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.BaseArFragment;
@@ -37,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements
         BaseArFragment.OnSessionConfigurationListener,
         ArFragment.OnViewCreatedListener {
 
-    private ArFragment arFragment;
+    private ArFragment mArFragment;
     private Renderable model;
     private ViewRenderable viewRenderable;
 
@@ -56,16 +58,16 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
-        loadModels();
+//        loadModels();
     }
 
     @Override
     public void onAttachFragment(@NonNull FragmentManager fragmentManager, @NonNull Fragment fragment) {
         if (fragment.getId() == R.id.ar_fragment) {
-            arFragment = (ArFragment) fragment;
-            arFragment.setOnSessionConfigurationListener(this);
-            arFragment.setOnViewCreatedListener(this);
-            arFragment.setOnTapArPlaneListener(this);
+            mArFragment = (ArFragment) fragment;
+            mArFragment.setOnSessionConfigurationListener(this);
+            mArFragment.setOnViewCreatedListener(this);
+            mArFragment.setOnTapArPlaneListener(this);
         }
     }
 
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onViewCreated(ArSceneView arSceneView) {
-        arFragment.setOnViewCreatedListener(null);
+        mArFragment.setOnViewCreatedListener(null);
 
         // Fine adjust the maximum frame rate
         arSceneView.setFrameRateFactor(SceneView.FrameRate.FULL);
@@ -119,29 +121,56 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onTapPlane(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
-//        if (model == null || viewRenderable == null) {
-        if (model == null) {
-            Toast.makeText(this, "Loading...", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         // Create the Anchor.
         Anchor anchor = hitResult.createAnchor();
         AnchorNode anchorNode = new AnchorNode(anchor);
-        anchorNode.setParent(arFragment.getArSceneView().getScene());
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
 
-        // Create the transformable model and add it to the anchor.
-        TransformableNode model = new TransformableNode(arFragment.getTransformationSystem());
-        model.setParent(anchorNode);
-        model.setRenderable(this.model)
-                .animate(true).start();
-        model.select();
 
-//        Node titleNode = new Node();
-//        titleNode.setParent(model);
-//        titleNode.setEnabled(false);
-//        titleNode.setLocalPosition(new Vector3(0.0f, 1.0f, 0.0f));
-//        titleNode.setRenderable(viewRenderable);
-//        titleNode.setEnabled(true);
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 244, 244))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.05f, 0.05f, 0.05f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                });
+
+////        if (model == null || viewRenderable == null) {
+//        if (model == null) {
+//            Toast.makeText(this, "Loading...", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        // Create the Anchor.
+//        Anchor anchor = hitResult.createAnchor();
+//        AnchorNode anchorNode = new AnchorNode(anchor);
+//        anchorNode.setParent(mArFragment.getArSceneView().
+//
+//                getScene());
+//
+//        // Create the transformable model and add it to the anchor.
+//        TransformableNode model = new TransformableNode(mArFragment.getTransformationSystem());
+//        model.setParent(anchorNode);
+//        model.setRenderable(this.model)
+//                .
+//
+//                        animate(true).
+//
+//                start();
+//        model.select();
+//
+////        Node titleNode = new Node();
+////        titleNode.setParent(model);
+////        titleNode.setEnabled(false);
+////        titleNode.setLocalPosition(new Vector3(0.0f, 1.0f, 0.0f));
+////        titleNode.setRenderable(viewRenderable);
+////        titleNode.setEnabled(true);
     }
 }
