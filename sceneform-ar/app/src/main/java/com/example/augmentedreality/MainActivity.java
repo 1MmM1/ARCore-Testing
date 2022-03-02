@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mArFragment = (ArFragment) ((Object) getSupportFragmentManager().findFragmentById(R.id.ar_fragment));
+        mArFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ar_fragment);
         mArFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
             Anchor anchor = hitResult.createAnchor();
             ModelRenderable.builder()
@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void addModelToScene(Anchor anchor, ModelRenderable modelRenderable) {
         AnchorNode node = new AnchorNode(anchor);
+        node.setParent(mArFragment.getArSceneView().getScene());
+
         TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
         transformableNode.setParent(node);
         transformableNode.setRenderable(modelRenderable);
