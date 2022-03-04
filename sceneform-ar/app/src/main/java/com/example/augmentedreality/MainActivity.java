@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onTapPlane(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
 
+
         // Create the Anchor.
         Anchor anchor = hitResult.createAnchor();
         AnchorNode anchorNode = new AnchorNode(anchor);
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements
 
         MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 244, 244))
                 .thenAccept(material -> {
-                    Vector3 vector3 = new Vector3(0.05f, 0.05f, 0.05f);
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
                     ModelRenderable model = ShapeFactory.makeCube(vector3,
                             Vector3.zero(), material);
                     model.setShadowCaster(false);
@@ -142,35 +143,18 @@ public class MainActivity extends AppCompatActivity implements
                     transformableNode.select();
                 });
 
-////        if (model == null || viewRenderable == null) {
-//        if (model == null) {
-//            Toast.makeText(this, "Loading...", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        // Create the Anchor.
-//        Anchor anchor = hitResult.createAnchor();
-//        AnchorNode anchorNode = new AnchorNode(anchor);
-//        anchorNode.setParent(mArFragment.getArSceneView().
-//
-//                getScene());
-//
-//        // Create the transformable model and add it to the anchor.
-//        TransformableNode model = new TransformableNode(mArFragment.getTransformationSystem());
-//        model.setParent(anchorNode);
-//        model.setRenderable(this.model)
-//                .
-//
-//                        animate(true).
-//
-//                start();
-//        model.select();
-//
-////        Node titleNode = new Node();
-////        titleNode.setParent(model);
-////        titleNode.setEnabled(false);
-////        titleNode.setLocalPosition(new Vector3(0.0f, 1.0f, 0.0f));
-////        titleNode.setRenderable(viewRenderable);
-////        titleNode.setEnabled(true);
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(0, 0, 244))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                });
     }
 }
