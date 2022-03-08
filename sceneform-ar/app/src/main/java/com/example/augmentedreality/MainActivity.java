@@ -1,9 +1,7 @@
 package com.example.augmentedreality;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,14 +22,10 @@ import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Color;
 import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
-import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.BaseArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
-
-import java.lang.ref.WeakReference;
 
 public class MainActivity extends AppCompatActivity implements
         FragmentOnAttachListener,
@@ -40,8 +34,6 @@ public class MainActivity extends AppCompatActivity implements
         ArFragment.OnViewCreatedListener {
 
     private ArFragment mArFragment;
-    private Renderable model;
-    private ViewRenderable viewRenderable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements
                         .commit();
             }
         }
-
-//        loadModels();
     }
 
     @Override
@@ -86,50 +76,20 @@ public class MainActivity extends AppCompatActivity implements
         arSceneView.setFrameRateFactor(SceneView.FrameRate.FULL);
     }
 
-    public void loadModels() {
-        WeakReference<MainActivity> weakActivity = new WeakReference<>(this);
-        ModelRenderable.builder()
-                .setSource(this, Uri.parse("TigerModel.glb"))
-                .setIsFilamentGltf(true)
-                .setAsyncLoadEnabled(true)
-                .build()
-                .thenAccept(model -> {
-                    MainActivity activity = weakActivity.get();
-                    if (activity != null) {
-                        activity.model = model;
-                    }
-                })
-                .exceptionally(throwable -> {
-                    Toast.makeText(
-                            this, "Unable to load model", Toast.LENGTH_LONG).show();
-                    return null;
-                });
-//        ViewRenderable.builder()
-//                .setView(this, R.layout.view_model_title)
-//                .build()
-//                .thenAccept(viewRenderable -> {
-//                    MainActivity activity = weakActivity.get();
-//                    if (activity != null) {
-//                        activity.viewRenderable = viewRenderable;
-//                    }
-//                })
-//                .exceptionally(throwable -> {
-//                    Toast.makeText(this, "Unable to load model", Toast.LENGTH_LONG).show();
-//                    return null;
-//                });
-    }
-
     @Override
     public void onTapPlane(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Test overlapping objects
+        createColocatedCubes(hitResult, plane, motionEvent);
+    }
 
-
+    private void createColocatedCubes(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
         // Create the Anchor.
         Anchor anchor = hitResult.createAnchor();
         AnchorNode anchorNode = new AnchorNode(anchor);
         anchorNode.setParent(mArFragment.getArSceneView().getScene());
 
 
-        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 244, 244))
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 0, 0))
                 .thenAccept(material -> {
                     Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
                     ModelRenderable model = ShapeFactory.makeCube(vector3,
