@@ -1,6 +1,7 @@
 package com.example.augmentedreality;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
@@ -27,11 +28,22 @@ import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.BaseArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.util.concurrent.CompletableFuture;
+
 public class MainActivity extends AppCompatActivity implements
         FragmentOnAttachListener,
         BaseArFragment.OnTapArPlaneListener,
         BaseArFragment.OnSessionConfigurationListener,
         ArFragment.OnViewCreatedListener {
+    private static final String DEBUG_TAG = "MainActivity";
+    /*
+        Flag value to change which test case the app is running:
+        0 - base case
+        1 - test creation of 2 colocated cubes on the same anchor
+        2 - test creation of 2 colocated cubes on the same anchor when done in parallel
+        3 - test click handling of 2 colocated cubes on the same anchor
+     */
+    private static final int TEST_CASE = 2;
 
     private ArFragment mArFragment;
 
@@ -78,8 +90,59 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onTapPlane(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
-        // Test overlapping objects
-        createColocatedCubes(hitResult, plane, motionEvent);
+        Log.i(DEBUG_TAG, "Running test case: " + TEST_CASE);
+        switch (TEST_CASE) {
+            case 0:
+                // base case
+                break;
+            case 1:
+                // Test overlapping objects
+                createColocatedCubes(hitResult, plane, motionEvent);
+                break;
+            case 2:
+                // Test overlapping objects in parallel
+                createColocatedCubesInParallel(hitResult, plane, motionEvent);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void createColocatedCubesInParallel(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Create the Anchor.
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
+
+        CompletableFuture.allOf(
+                MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 0, 0))
+                        .thenAccept(material -> {
+                            Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                            ModelRenderable model = ShapeFactory.makeCube(vector3,
+                                    Vector3.zero(), material);
+                            model.setShadowCaster(false);
+                            model.setShadowReceiver(false);
+
+                            TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                            transformableNode.setParent(anchorNode);
+                            transformableNode.setRenderable(model);
+                            transformableNode.select();
+                        }),
+
+                MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(0, 0, 244))
+                        .thenAccept(material -> {
+                            Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                            ModelRenderable model = ShapeFactory.makeCube(vector3,
+                                    Vector3.zero(), material);
+                            model.setShadowCaster(false);
+                            model.setShadowReceiver(false);
+
+                            TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                            transformableNode.setParent(anchorNode);
+                            transformableNode.setRenderable(model);
+                            transformableNode.select();
+                        })
+        );
     }
 
     private void createColocatedCubes(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
@@ -87,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements
         Anchor anchor = hitResult.createAnchor();
         AnchorNode anchorNode = new AnchorNode(anchor);
         anchorNode.setParent(mArFragment.getArSceneView().getScene());
-
 
         MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 0, 0))
                 .thenAccept(material -> {
