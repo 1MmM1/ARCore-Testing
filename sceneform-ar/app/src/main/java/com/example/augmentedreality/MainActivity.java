@@ -3,6 +3,7 @@ package com.example.augmentedreality;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -204,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements
                     transformableNode.setRenderable(model);
                     transformableNode.select();
                     transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped red cube", Toast.LENGTH_SHORT).show();
                         Log.i(DEBUG_TAG, "tapping red cube");
                     });
 //                    transformableNode.setOnTouchListener((hitTestResult, tapMotionEvent) -> {
@@ -225,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements
                     transformableNode.setRenderable(model);
                     transformableNode.select();
                     transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped blue cube", Toast.LENGTH_SHORT).show();
                         Log.i(DEBUG_TAG, "tapping blue cube");
                     });
 //                    transformableNode.setOnTouchListener((hitTestResult, tapMotionEvent) -> {
