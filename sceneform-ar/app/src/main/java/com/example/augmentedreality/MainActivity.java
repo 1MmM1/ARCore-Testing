@@ -17,6 +17,8 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Session;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
+import com.google.ar.sceneform.HitTestResult;
+import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.SceneView;
 import com.google.ar.sceneform.Sceneform;
 import com.google.ar.sceneform.math.Vector3;
@@ -43,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements
         2 - test creation of 2 colocated cubes on the same anchor when done in parallel
         3 - test click handling of 2 colocated cubes on the same anchor
      */
-    private static final int TEST_CASE = 2;
+    private static final int TEST_CASE = 3;
 
     private ArFragment mArFragment;
 
@@ -102,6 +104,9 @@ public class MainActivity extends AppCompatActivity implements
             case 2:
                 // Test overlapping objects in parallel
                 createColocatedCubesInParallel(hitResult, plane, motionEvent);
+                break;
+            case 3:
+                createClickableColocatedCubes(hitResult, plane, motionEvent);
                 break;
             default:
                 break;
@@ -177,6 +182,55 @@ public class MainActivity extends AppCompatActivity implements
                     transformableNode.setParent(anchorNode);
                     transformableNode.setRenderable(model);
                     transformableNode.select();
+                });
+    }
+
+    private void createClickableColocatedCubes(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Create the Anchor.
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 0, 0))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Log.i(DEBUG_TAG, "tapping red cube");
+                    });
+//                    transformableNode.setOnTouchListener((hitTestResult, tapMotionEvent) -> {
+//                        Log.i(DEBUG_TAG, "touching red cube");
+//                        return false;
+//                    });
+                });
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(0, 0, 244))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Log.i(DEBUG_TAG, "tapping blue cube");
+                    });
+//                    transformableNode.setOnTouchListener((hitTestResult, tapMotionEvent) -> {
+//                        Log.i(DEBUG_TAG, "touching blue cube");
+//                        return false;
+//                    });
                 });
     }
 }
