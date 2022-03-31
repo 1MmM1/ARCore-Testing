@@ -45,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements
         1 - test creation of 2 colocated cubes on the same anchor
         2 - test creation of 2 colocated cubes on the same anchor when done in parallel
         3 - test click handling of 2 colocated cubes on the same anchor
+        4 - test creation of invisible object
      */
-    private static final int TEST_CASE = 3;
+    private static final int TEST_CASE = 4;
 
     private ArFragment mArFragment;
 
@@ -109,9 +110,39 @@ public class MainActivity extends AppCompatActivity implements
             case 3:
                 createClickableColocatedCubes(hitResult, plane, motionEvent);
                 break;
+            case 4:
+                createInvisibleCube(hitResult, plane, motionEvent);
+                break;
             default:
                 break;
         }
+    }
+
+    private void createInvisibleCube(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Create the Anchor.
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(0, 0, 0, 0))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped invisible cube", Toast.LENGTH_SHORT).show();
+                        Log.i(DEBUG_TAG, "tapping invisible cube");
+                    });
+                });
+        Toast.makeText(getApplicationContext(), "Made invisible cube", Toast.LENGTH_SHORT).show();
+        Log.i(DEBUG_TAG, "Making invisible cube");
     }
 
     private void createColocatedCubesInParallel(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
