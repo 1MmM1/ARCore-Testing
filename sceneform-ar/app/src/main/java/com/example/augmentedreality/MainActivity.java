@@ -1,5 +1,6 @@
 package com.example.augmentedreality;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -31,6 +32,7 @@ import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.BaseArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 public class MainActivity extends AppCompatActivity implements
@@ -46,8 +48,9 @@ public class MainActivity extends AppCompatActivity implements
         2 - test creation of 2 colocated cubes on the same anchor when done in parallel
         3 - test click handling of 2 colocated cubes on the same anchor
         4 - test creation of invisible object
+        5 - test creation of object which plays sound
      */
-    private static final int TEST_CASE = 4;
+    private static final int TEST_CASE = 5;
 
     private ArFragment mArFragment;
 
@@ -113,9 +116,44 @@ public class MainActivity extends AppCompatActivity implements
             case 4:
                 createInvisibleCube(hitResult, plane, motionEvent);
                 break;
+            case 5:
+                createInvisibleCubeWithSound(hitResult, plane, motionEvent);
+                break;
             default:
                 break;
         }
+    }
+
+    private void createInvisibleCubeWithSound(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Create the Anchor.
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(0, 244, 0))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    MediaPlayer mp = MediaPlayer.create(this, R.raw.band_piece);
+                    mp.setLooping(true);
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped green cube", Toast.LENGTH_SHORT).show();
+                        Log.i(DEBUG_TAG, "tapping green cube");
+                        try {
+                            mp.start();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                });
     }
 
     private void createInvisibleCube(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
