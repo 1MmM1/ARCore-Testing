@@ -53,8 +53,9 @@ public class MainActivity extends AppCompatActivity implements
         5 - test creation of colocated invisible objects
         6 - test creation of object which plays sound
         7 - test synthetic click
+        8 - test creation of object with null material
      */
-    private static final int TEST_CASE = 7;
+    private static final int TEST_CASE = 8;
 
     private ArFragment mArFragment;
     private Handler mHandler;
@@ -100,33 +101,6 @@ public class MainActivity extends AppCompatActivity implements
 
         // Fine adjust the maximum frame rate
         arSceneView.setFrameRateFactor(SceneView.FrameRate.FULL);
-
-//        if (TEST_CASE == 7) {
-//            Toast.makeText(getApplicationContext(), "Start synthetic click", Toast.LENGTH_SHORT).show();
-//            syntheticOverride = true;
-//            mHandler.postDelayed(() -> {
-//                // Obtain MotionEvent object
-//                long downTime = SystemClock.uptimeMillis();
-//                long eventTime = SystemClock.uptimeMillis() + 100;
-//                float x = 0.0f;
-//                float y = 0.0f;
-//                // List of meta states found here: developer.android.com/reference/android/view/KeyEvent.html#getMetaState()
-//                int metaState = 0;
-//                MotionEvent syntheticMotionEvent = MotionEvent.obtain(
-//                        downTime,
-//                        eventTime,
-//                        MotionEvent.ACTION_UP,
-//                        x,
-//                        y,
-//                        metaState
-//                );
-//
-//                // Dispatch touch event
-//                Log.i(DEBUG_TAG, "About to dispatch synthetic touch event");
-//                arSceneView.dispatchTouchEvent(syntheticMotionEvent);
-//                Log.i(DEBUG_TAG, "After dispatch synthetic touch event");
-//            }, 5000);
-//        }
     }
 
     @Override
@@ -160,6 +134,9 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case 7:
                 createCubeAfterDelaySynthetic(hitResult, plane, motionEvent);
+                break;
+            case 8:
+                createNoMaterialCube(hitResult, plane, motionEvent);
                 break;
             default:
                 break;
@@ -273,6 +250,33 @@ public class MainActivity extends AppCompatActivity implements
                         Log.i(DEBUG_TAG, "tapping red cube");
                     });
                 });
+    }
+
+    private void createNoMaterialCube(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Create the Anchor.
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), null)
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.5f, 0.5f, 0.5f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped invisible cube", Toast.LENGTH_SHORT).show();
+                        Log.i(DEBUG_TAG, "tapping invisible cube");
+                    });
+                });
+        Toast.makeText(getApplicationContext(), "Made invisible cube", Toast.LENGTH_SHORT).show();
+        Log.i(DEBUG_TAG, "Making invisible cube");
     }
 
     private void createInvisibleCube(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
