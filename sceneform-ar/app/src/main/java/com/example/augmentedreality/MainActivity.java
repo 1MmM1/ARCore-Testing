@@ -2,6 +2,8 @@ package com.example.augmentedreality;
 
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
@@ -50,10 +52,13 @@ public class MainActivity extends AppCompatActivity implements
         4 - test creation of invisible object
         5 - test creation of colocated invisible objects
         6 - test creation of object which plays sound
+        7 - test synthetic click
      */
-    private static final int TEST_CASE = 5;
+    private static final int TEST_CASE = 7;
 
     private ArFragment mArFragment;
+    private Handler mHandler;
+    private boolean syntheticOverride = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,15 +95,45 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onViewCreated(ArSceneView arSceneView) {
+        mHandler = new Handler();
         mArFragment.setOnViewCreatedListener(null);
 
         // Fine adjust the maximum frame rate
         arSceneView.setFrameRateFactor(SceneView.FrameRate.FULL);
+
+//        if (TEST_CASE == 7) {
+//            Toast.makeText(getApplicationContext(), "Start synthetic click", Toast.LENGTH_SHORT).show();
+//            syntheticOverride = true;
+//            mHandler.postDelayed(() -> {
+//                // Obtain MotionEvent object
+//                long downTime = SystemClock.uptimeMillis();
+//                long eventTime = SystemClock.uptimeMillis() + 100;
+//                float x = 0.0f;
+//                float y = 0.0f;
+//                // List of meta states found here: developer.android.com/reference/android/view/KeyEvent.html#getMetaState()
+//                int metaState = 0;
+//                MotionEvent syntheticMotionEvent = MotionEvent.obtain(
+//                        downTime,
+//                        eventTime,
+//                        MotionEvent.ACTION_UP,
+//                        x,
+//                        y,
+//                        metaState
+//                );
+//
+//                // Dispatch touch event
+//                Log.i(DEBUG_TAG, "About to dispatch synthetic touch event");
+//                arSceneView.dispatchTouchEvent(syntheticMotionEvent);
+//                Log.i(DEBUG_TAG, "After dispatch synthetic touch event");
+//            }, 5000);
+//        }
     }
 
     @Override
     public void onTapPlane(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
         Log.i(DEBUG_TAG, "Running test case: " + TEST_CASE);
+        Log.i(DEBUG_TAG, "Current click registered at (" + motionEvent.getX() + ", " + motionEvent.getY() + ")");
+        Log.i(DEBUG_TAG, "MotionEvent type: " + motionEvent.getAction());
         switch (TEST_CASE) {
             case 0:
                 // base case
@@ -123,8 +158,43 @@ public class MainActivity extends AppCompatActivity implements
             case 6:
                 createInvisibleCubeWithSound(hitResult, plane, motionEvent);
                 break;
+            case 7:
+                createCubeAfterDelaySynthetic(hitResult, plane, motionEvent);
+                break;
             default:
                 break;
+        }
+    }
+
+    private void createCubeAfterDelaySynthetic(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        if (syntheticOverride) {
+            createClickableColocatedCubes(hitResult, plane, motionEvent);
+            syntheticOverride = false;
+        } else {
+            Toast.makeText(getApplicationContext(), "Start synthetic click", Toast.LENGTH_SHORT).show();
+            syntheticOverride = true;
+            mHandler.postDelayed(() -> {
+                // Obtain MotionEvent object
+                long downTime = SystemClock.uptimeMillis();
+                long eventTime = SystemClock.uptimeMillis() + 100;
+                float x = 0.0f;
+                float y = 0.0f;
+                // List of meta states found here: developer.android.com/reference/android/view/KeyEvent.html#getMetaState()
+                int metaState = 0;
+                MotionEvent syntheticMotionEvent = MotionEvent.obtain(
+                        downTime,
+                        eventTime,
+                        MotionEvent.ACTION_UP,
+                        x,
+                        y,
+                        metaState
+                );
+
+                // Dispatch touch event
+                Log.i(DEBUG_TAG, "About to dispatch synthetic touch event");
+                mArFragment.getArSceneView().dispatchTouchEvent(syntheticMotionEvent);
+                Log.i(DEBUG_TAG, "After dispatch synthetic touch event");
+            }, 5000);
         }
     }
 
