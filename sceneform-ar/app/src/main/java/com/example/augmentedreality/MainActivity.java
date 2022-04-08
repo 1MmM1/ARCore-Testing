@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements
         Log.i(DEBUG_TAG, "Running test case: " + TEST_CASE);
         Log.i(DEBUG_TAG, "Current click registered at (" + motionEvent.getX() + ", " + motionEvent.getY() + ")");
         Log.i(DEBUG_TAG, "MotionEvent type: " + motionEvent.getAction());
+        Log.i(DEBUG_TAG, "Number of children nodes for this ArFragment: " + mArFragment.getArSceneView().getScene().getChildren().size());
         switch (TEST_CASE) {
             case 0:
                 // base case
