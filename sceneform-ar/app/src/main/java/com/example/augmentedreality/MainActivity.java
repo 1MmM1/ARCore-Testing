@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements
         7 - test synthetic click
         8 - test creation of object with null material
      */
-    private static final int TEST_CASE = 8;
+    private static final int TEST_CASE = 7;
 
     private ArFragment mArFragment;
     private Handler mHandler;
@@ -155,8 +155,8 @@ public class MainActivity extends AppCompatActivity implements
                 // Obtain MotionEvent object
                 long downTime = SystemClock.uptimeMillis();
                 long eventTime = SystemClock.uptimeMillis() + 100;
-                float x = 0.0f;
-                float y = 0.0f;
+                float x = 500f;
+                float y = 1000f;
                 // List of meta states found here: developer.android.com/reference/android/view/KeyEvent.html#getMetaState()
                 int metaState = 0;
                 MotionEvent syntheticMotionEvent = MotionEvent.obtain(
