@@ -54,8 +54,9 @@ public class MainActivity extends AppCompatActivity implements
         6 - test creation of object which plays sound
         7 - test synthetic click
         8 - test creation of object with null material
+        9 - test creation of 2 colocated no material cubes
      */
-    private static final int TEST_CASE = 7;
+    private static final int TEST_CASE = 9;
 
     private ArFragment mArFragment;
     private Handler mHandler;
@@ -139,6 +140,9 @@ public class MainActivity extends AppCompatActivity implements
             case 8:
                 createNoMaterialCube(hitResult, plane, motionEvent);
                 break;
+            case 9:
+                createColocatedNoMaterialCube(hitResult, plane, motionEvent);
+                break;
             default:
                 break;
         }
@@ -215,6 +219,51 @@ public class MainActivity extends AppCompatActivity implements
         anchorNode.setParent(mArFragment.getArSceneView().getScene());
 
         MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(0, 0, 0, 0))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped invisible cube", Toast.LENGTH_SHORT).show();
+                        Log.i(DEBUG_TAG, "tapping invisible cube");
+                    });
+                });
+        Toast.makeText(getApplicationContext(), "Made invisible cube", Toast.LENGTH_SHORT).show();
+        Log.i(DEBUG_TAG, "Making invisible cube");
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(244, 0, 0))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped red cube", Toast.LENGTH_SHORT).show();
+                        Log.i(DEBUG_TAG, "tapping red cube");
+                    });
+                });
+    }
+
+    private void createColocatedNoMaterialCube(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Create the Anchor.
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), null)
                 .thenAccept(material -> {
                     Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
                     ModelRenderable model = ShapeFactory.makeCube(vector3,
