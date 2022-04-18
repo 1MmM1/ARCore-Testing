@@ -25,6 +25,7 @@ import com.google.ar.sceneform.HitTestResult;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.SceneView;
 import com.google.ar.sceneform.Sceneform;
+import com.google.ar.sceneform.collision.Box;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Color;
 import com.google.ar.sceneform.rendering.MaterialFactory;
@@ -55,8 +56,9 @@ public class MainActivity extends AppCompatActivity implements
         7 - test synthetic click
         8 - test creation of object with null material
         9 - test creation of 2 colocated no material cubes
+        10 - test creation of collision object bigger than visible object
      */
-    private static final int TEST_CASE = 9;
+    private static final int TEST_CASE = 10;
 
     private ArFragment mArFragment;
     private Handler mHandler;
@@ -143,9 +145,40 @@ public class MainActivity extends AppCompatActivity implements
             case 9:
                 createColocatedNoMaterialCube(hitResult, plane, motionEvent);
                 break;
+            case 10:
+                createLargeMesh(hitResult, plane, motionEvent);
+                break;
             default:
                 break;
         }
+    }
+
+    private void createLargeMesh(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
+        // Create the Anchor.
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(mArFragment.getArSceneView().getScene());
+
+        MaterialFactory.makeTransparentWithColor(getApplicationContext(), new Color(0, 244, 0))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.1f, 0.1f, 0.1f);
+                    ModelRenderable model = ShapeFactory.makeCube(vector3,
+                            Vector3.zero(), material);
+                    model.setShadowCaster(false);
+                    model.setShadowReceiver(false);
+
+                    Vector3 collisionVector3 = new Vector3(0.5f, 0.5f, 0.5f);
+                    model.setCollisionShape(new Box(collisionVector3));
+
+                    TransformableNode transformableNode = new TransformableNode(mArFragment.getTransformationSystem());
+                    transformableNode.setParent(anchorNode);
+                    transformableNode.setRenderable(model);
+                    transformableNode.select();
+                    transformableNode.setOnTapListener((hitTestResult, tapMotionEvent) -> {
+                        Toast.makeText(getApplicationContext(), "Tapped green cube", Toast.LENGTH_SHORT).show();
+                        Log.i(DEBUG_TAG, "tapping green cube");
+                    });
+                });
     }
 
     private void createCubeAfterDelaySynthetic(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
